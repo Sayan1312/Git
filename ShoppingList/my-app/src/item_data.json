@@ -1,0 +1,51 @@
+[
+    {
+      "id": 1,
+      "listId": 1,
+      "name": "Milk",
+      "quantity": 5,
+      "completed": false
+    },
+    {
+      "id": 2,
+     "listId": 1,
+      "name": "Bread",
+      "quantity": 5,
+      "completed": false
+    },
+    {
+      "id": 3,
+   "listId": 2,
+      "name": "Egg",
+      "quantity": 5,
+      "completed": false
+    },
+    {
+      "id": 4,
+     "listId": 2,
+      "name": "Meat",
+      "quantity": 5,
+      "completed": false
+    },
+    {
+        "id": 5,
+       "listId": 3,
+        "name": "Chair",
+        "quantity": 5,
+        "completed": false
+      },
+      {
+        "id": 6,
+       "listId": 3,
+        "name": "Bed",
+        "quantity": 5,
+        "completed": false
+      },
+      {
+        "id": 7,
+       "listId": 4,
+        "name": "Water",
+        "quantity": 5,
+        "completed": false
+      }
+  ]
