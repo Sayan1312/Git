@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 
 function Navigation() {
   const breadcrumbStyle = {
-    background: '#40E0D0',
+    background: '#00FFFF',
     padding: '25px',
     
   };
