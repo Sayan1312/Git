@@ -13,6 +13,6 @@ module.exports = (err, req, res, next) => {
   }
 
   res.status(500).json({
-    uuAppErrorMap: { errorCode: 'InternalServerError', message: 'An error happened.' }
+    uuAppErrorMap: { errorCode: 'InternalServerError', message: 'An unexpected error occurred.' }
   });
 };
