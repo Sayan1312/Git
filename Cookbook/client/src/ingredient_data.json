@@ -1,0 +1,27 @@
+[
+  {
+    "id": 1,
+    "name": "Spaghetti Carbonara",
+    "description": "A classic Italian pasta dish made with eggs, cheese, pancetta, and pepper. Simple, creamy, and satisfying."
+  },
+  {
+    "id": 2,
+    "name": "Chicken Tikka Masala",
+    "description": "Tender chunks of chicken marinated in spices and yogurt, grilled, and served in a creamy tomato curry sauce."
+  },
+  {
+    "id": 3,
+    "name": "Vegan Buddha Bowl",
+    "description": "A colorful bowl of roasted vegetables, quinoa, chickpeas, and tahini dressing — healthy and hearty."
+  },
+  {
+    "id": 4,
+    "name": "Beef Stroganoff",
+    "description": "Rich and creamy beef stroganoff with mushrooms, onions, and sour cream served over egg noodles."
+  },
+  {
+    "id": 5,
+    "name": "Chocolate Lava Cake",
+    "description": "A decadent dessert with a warm, gooey chocolate center that flows out when cut."
+  }
+]

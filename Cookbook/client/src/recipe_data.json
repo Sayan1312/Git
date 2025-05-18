@@ -1,0 +1,14 @@
+[
+  {
+    "id": 1,
+    "name": "Pasta Carbonara",
+    "description": "A classic Italian pasta dish with eggs, cheese, pancetta, and pepper.",
+    "rating": 4
+  },
+  {
+    "id": 2,
+    "name": "Tomato Soup",
+    "description": "Smooth and creamy soup made from fresh tomatoes.",
+    "rating": 5
+  }
+]

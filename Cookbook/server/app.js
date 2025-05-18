@@ -2,7 +2,10 @@ require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const userRoutes = require('./routes/userRoutes');
-
+const recipeRoutes = require('./routes/recipeRoutes');
+app.use('/api/recipes', recipeRoutes);
+const userRoutes = require('./routes/userRoutes');
+app.use('/api/users', userRoutes);  
 const app = express();
 
 app.use(express.json());
