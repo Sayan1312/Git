@@ -1,8 +1,8 @@
 [
   {
     "id": 1,
-    "name": "Spaghetti Carbonara",
-    "description": "A classic Italian pasta dish made with eggs, cheese, pancetta, and pepper. Simple, creamy, and satisfying."
+    "recipeId": "222" ,
+    "name": "kapusta"
   },
   {
     "id": 2,

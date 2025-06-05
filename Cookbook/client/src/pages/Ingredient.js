@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { Button, ListGroup } from "react-bootstrap";
 import { useParams } from "react-router-dom";
-import Recipes from '../recipe_data.json';
-import Ingredients from '../ingredient_data.json';
+import axios from "axios";
 import CreateIngredientForm from '../components/CreateIngredientForm';
 import EditIngredientForm from "../components/EditIngredientForm";
-import CommentForm from '../components/Comment';
 
 const Ingredient = () => {
   const { recipeId } = useParams();
@@ -14,39 +12,70 @@ const Ingredient = () => {
   const [loading, setLoading] = useState(true);
 
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [showCommentModal, setShowCommentModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedIngredient, setSelectedIngredient] = useState(null);
 
   useEffect(() => {
-    setTimeout(() => {
-      if (recipeId) {
-        const foundRecipe = Recipes.find((r) => r.id === Number(recipeId));
-        setRecipe(foundRecipe);
-        setIngredients(Ingredients.filter((i) => i.recipeId === Number(recipeId)));
-      } else {
-        setIngredients(Ingredients);
+    const fetchData = async () => {
+      try {
+        if (recipeId) {
+          const recipeRes = await axios.get(`http://localhost:5000/api/recipes/${recipeId}`);
+          const ingredientRes = await axios.get(`http://localhost:5000/api/ingredients/recipe/${recipeId}`);
+          setRecipe(recipeRes.data);
+          setIngredients(ingredientRes.data);
+        } else {
+          const res = await axios.get('http://localhost:5000/api/ingredients');
+          setIngredients(res.data);
+        }
+      } catch (error) {
+        console.error("Ошибка при загрузке данных:", error);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
-    }, 1000);
+    };
+
+    fetchData();
   }, [recipeId]);
 
-  const handleCreateIngredient = (newIngredient) => {
-    setIngredients([...ingredients, newIngredient]);
-    setShowCreateModal(false);
+  const handleCreateIngredient = async (newIngredient) => {
+    try {
+      const res = await axios.post("http://localhost:5000/api/ingredients", {
+        ...newIngredient,
+        recipeId: recipeId,
+      });
+      setIngredients([...ingredients, res.data]);
+      setShowCreateModal(false);
+    } catch (error) {
+      console.error("Ошибка при создании ингредиента:", error);
+    }
   };
 
-  const handleDeleteIngredient = (ingredientId) => {
-    setIngredients(ingredients.filter((i) => i.id !== ingredientId));
-    setSelectedIngredient(null);
+  const handleDeleteIngredient = async (ingredientId) => {
+    try {
+      await axios.delete(`http://localhost:5000/api/ingredients/${ingredientId}`);
+      setIngredients(ingredients.filter((i) => i._id !== ingredientId));
+      setSelectedIngredient(null);
+    } catch (error) {
+      console.error("Ошибка при удалении ингредиента:", error);
+    }
   };
 
-  const handleEditIngredient = (editedIngredient) => {
-    setIngredients(ingredients.map((i) =>
-      i.id === editedIngredient.id ? { ...i, ...editedIngredient } : i
-    ));
-    setShowEditModal(false);
-    setSelectedIngredient(null);
+  const handleEditIngredient = async (editedIngredient) => {
+    try {
+      const res = await axios.put(
+        `http://localhost:5000/api/ingredients/${editedIngredient._id}`,
+        editedIngredient
+      );
+      setIngredients(
+        ingredients.map((i) =>
+          i._id === editedIngredient._id ? res.data : i
+        )
+      );
+      setShowEditModal(false);
+      setSelectedIngredient(null);
+    } catch (error) {
+      console.error("Ошибка при редактировании ингредиента:", error);
+    }
   };
 
   return (
@@ -61,8 +90,8 @@ const Ingredient = () => {
           {recipe && (
             <>
               <h3>Recipe Details</h3>
-              <p><strong>Name:</strong> {recipe.name}</p>
-              <p><strong>Description:</strong> {recipe.description}</p>
+              <p><strong>Name:</strong> {recipe.title}</p>
+              <p><strong>Description:</strong> {recipe.instructions}</p>
             </>
           )}
 
@@ -77,11 +106,10 @@ const Ingredient = () => {
 
           <ListGroup>
             {ingredients.map((ingredient) => (
-              <ListGroup.Item key={ingredient.id}>
-                <strong>{ingredient.name}</strong> — Quantity: {ingredient.quantity ?? 1}
-                <div>Description: {ingredient.description}</div>
+              <ListGroup.Item key={ingredient._id}>
+                <strong>{ingredient.name}</strong> — Quantity: {ingredient.quantity?.amount ?? 1} {ingredient.quantity?.unit ?? ''}
                 <div className="float-end">
-                  <Button variant="danger" size="sm" onClick={() => handleDeleteIngredient(ingredient.id)}>
+                  <Button variant="danger" size="sm" onClick={() => handleDeleteIngredient(ingredient._id)}>
                     Delete
                   </Button>{' '}
                   <Button variant="warning" size="sm" onClick={() => {
@@ -90,12 +118,6 @@ const Ingredient = () => {
                   }}>
                     Edit
                   </Button>{' '}
-                  <Button variant="info" size="sm" onClick={() => {
-                    setSelectedIngredient(ingredient);
-                    setShowCommentModal(true);
-                  }}>
-                    Comment
-                  </Button>
                 </div>
               </ListGroup.Item>
             ))}
@@ -108,7 +130,7 @@ const Ingredient = () => {
               setSelectedIngredient(null);
             }}
             handleCreateingredient={(newIngredient) => {
-              handleCreateIngredient({ ...newIngredient, recipeId: Number(recipeId) });
+              handleCreateIngredient({ ...newIngredient, recipeId });
             }}
           />
 
@@ -122,13 +144,6 @@ const Ingredient = () => {
             ingredient={selectedIngredient}
           />
 
-          <CommentForm
-            show={showCommentModal}
-            handleClose={() => {
-              setShowCommentModal(false);
-              setSelectedIngredient(null);
-            }}
-          />
         </>
       )}
     </div>

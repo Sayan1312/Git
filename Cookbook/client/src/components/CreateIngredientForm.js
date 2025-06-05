@@ -3,15 +3,13 @@ import { Modal, Button, Form } from "react-bootstrap";
 
 const CreateIngredientForm = ({ show, handleClose, handleCreateingredient }) => {
   const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
-  const [quantity, setQuantity] = useState(1);
+  const [quantity, setQuantity] = useState({ amount: 1, unit: "gr" });
 
   useEffect(() => {
     if (!show) {
       // Очистка формы при закрытии модального окна
       setName("");
-      setDescription("");
-      setQuantity(1);
+      setQuantity({ amount: 1, unit: "gr" });
     }
   }, [show]);
 
@@ -23,16 +21,20 @@ const CreateIngredientForm = ({ show, handleClose, handleCreateingredient }) => 
       return;
     }
 
-    if (quantity < 1) {
-      alert("Quantity must be at least 1");
+    if (quantity.amount < 1) {
+      alert("Quantity amount must be at least 1");
+      return;
+    }
+
+    if (!quantity.unit.trim()) {
+      alert("Quantity unit is required");
       return;
     }
 
     const newIngredient = {
-      id: Date.now(), // простой уникальный ID
+      id: Date.now(), // уникальный ID для временного использования на фронте
       name,
-      description,
-      quantity,
+      quantity, // объект с amount и unit
     };
 
     handleCreateingredient(newIngredient);
@@ -59,23 +61,25 @@ const CreateIngredientForm = ({ show, handleClose, handleCreateingredient }) => 
           </Form.Group>
 
           <Form.Group className="mb-3">
-            <Form.Label>Description</Form.Label>
+            <Form.Label>Quantity Amount</Form.Label>
             <Form.Control
-              as="textarea"
-              rows={3}
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Enter description"
+              type="number"
+              min={1}
+              value={quantity.amount}
+              onChange={(e) =>
+                setQuantity({ ...quantity, amount: parseInt(e.target.value, 10) || 1 })
+              }
+              required
             />
           </Form.Group>
 
           <Form.Group className="mb-3">
-            <Form.Label>Quantity</Form.Label>
+            <Form.Label>Quantity Unit</Form.Label>
             <Form.Control
-              type="number"
-              min={1}
-              value={quantity}
-              onChange={(e) => setQuantity(parseInt(e.target.value, 10) || 1)}
+              type="text"
+              value={quantity.unit}
+              onChange={(e) => setQuantity({ ...quantity, unit: e.target.value })}
+              placeholder="e.g. gr, мl, pi"
               required
             />
           </Form.Group>

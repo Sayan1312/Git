@@ -1,14 +1,32 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Form, Button, Modal } from "react-bootstrap";
 
-const EditIngredientForm = ({ show, handleClose, handleEditIngredient }) => {
-  const [editIngredientName, setEditIngredientName] = useState("");
-  const [editIngredientDescription, setEditIngredientDescription] = useState("");
+const EditIngredientForm = ({ show, handleClose, handleEditingredient, ingredient }) => {
+  const [name, setName] = useState("");
+  const [amount, setAmount] = useState(1);
+  const [unit, setUnit] = useState("");
+
+  useEffect(() => {
+    if (ingredient) {
+      setName(ingredient.name || "");
+      setAmount(ingredient.quantity?.amount || 1);
+      setUnit(ingredient.quantity?.unit || "");
+    }
+  }, [ingredient]);
 
   const handleEditClick = () => {
-    handleEditIngredient({
-      name: editIngredientName,
-      description: editIngredientDescription,
+    if (!name.trim() || amount <= 0 || !unit.trim()) {
+      alert("Все поля обязательны");
+      return;
+    }
+
+    handleEditingredient({
+      _id: ingredient._id,
+      name,
+      quantity: {
+        amount,
+        unit,
+      },
     });
   };
 
@@ -20,20 +38,33 @@ const EditIngredientForm = ({ show, handleClose, handleEditIngredient }) => {
       <Modal.Body>
         <Form>
           <Form.Group className="mb-3" controlId="editIngredientName">
-            <Form.Label>Ingredient Name</Form.Label>
+            <Form.Label>Name</Form.Label>
             <Form.Control
               type="text"
-              value={editIngredientName}
-              onChange={(e) => setEditIngredientName(e.target.value)}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
             />
           </Form.Group>
-          <Form.Group className="mb-3" controlId="editIngredientDescription">
-            <Form.Label>Ingredient Description</Form.Label>
+          <Form.Group className="mb-3" controlId="editIngredientAmount">
+            <Form.Label>Amount</Form.Label>
             <Form.Control
-              as="textarea"
-              rows={5}
-              value={editIngredientDescription}
-              onChange={(e) => setEditIngredientDescription(e.target.value)}
+              type="number"
+              value={amount}
+              min={0.01}
+              step={0.01}
+              onChange={(e) => setAmount(parseFloat(e.target.value))}
+              required
+            />
+          </Form.Group>
+          <Form.Group className="mb-3" controlId="editIngredientUnit">
+            <Form.Label>Unit</Form.Label>
+            <Form.Control
+              type="text"
+              value={unit}
+              onChange={(e) => setUnit(e.target.value)}
+              placeholder="например, г, мл, шт"
+              required
             />
           </Form.Group>
         </Form>
@@ -43,7 +74,7 @@ const EditIngredientForm = ({ show, handleClose, handleEditIngredient }) => {
           Cancel
         </Button>
         <Button variant="primary" onClick={handleEditClick}>
-          Edit Ingredient
+          Save Changes
         </Button>
       </Modal.Footer>
     </Modal>

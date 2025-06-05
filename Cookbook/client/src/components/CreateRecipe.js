@@ -4,11 +4,18 @@ import { Button, Form, Modal } from 'react-bootstrap';
 function CreateRecipe({ show, handleClose, handleCreate }) {
   const [newRecipeName, setNewRecipeName] = useState('');
   const [newRecipeDescription, setNewRecipeDescription] = useState('');
+  const [cookingTime, setCookingTime] = useState('');
 
   const handleCreateClick = () => {
-    handleCreate(newRecipeName, newRecipeDescription);
+    if (!newRecipeName.trim() || !newRecipeDescription.trim() || cookingTime <= 0) {
+      alert("Все поля обязательны и время готовки должно быть положительным числом");
+      return;
+    }
+
+    handleCreate(newRecipeName, newRecipeDescription, Number(cookingTime));
     setNewRecipeName('');
     setNewRecipeDescription('');
+    setCookingTime('');
     handleClose();
   };
 
@@ -36,6 +43,16 @@ function CreateRecipe({ show, handleClose, handleCreate }) {
               value={newRecipeDescription}
               onChange={(e) => setNewRecipeDescription(e.target.value)}
               style={{ fontSize: '1.2rem', height: '100px' }}
+            />
+          </Form.Group>
+          <Form.Group className="mb-3" controlId="cookingTime">
+            <Form.Label style={{ fontSize: '1.5rem' }}>Cooking Time (minutes)</Form.Label>
+            <Form.Control
+              type="number"
+              min="1"
+              value={cookingTime}
+              onChange={(e) => setCookingTime(e.target.value)}
+              style={{ fontSize: '1.2rem', height: '50px' }}
             />
           </Form.Group>
         </Form>

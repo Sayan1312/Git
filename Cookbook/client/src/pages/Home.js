@@ -1,67 +1,98 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button, Card, Modal, Form, Row, Col } from "react-bootstrap";
-import CreateRecipe from "../components/CreateRecipe";
 import { Link } from "react-router-dom";
-import Recipes from "../recipe_data.json";
+import axios from "axios";
+import CreateRecipe from "../components/CreateRecipe";
 
 const Home = () => {
-  const [recipes, setRecipes] = useState(
-    Recipes.map((recipe) => ({
-      ...recipe,
-      rating: recipe.rating ?? 0,
-    }))
-  );
-
+  const [recipes, setRecipes] = useState([]);
   const [showUpdateModal, setShowUpdateModal] = useState(false);
   const [updateRecipeId, setUpdateRecipeId] = useState(null);
   const [updateRecipeName, setUpdateRecipeName] = useState("");
   const [updateRecipeDescription, setUpdateRecipeDescription] = useState("");
+  const [updateRecipeCookingTime, setUpdateRecipeCookingTime] = useState(0);
 
   const [showCreateModal, setShowCreateModal] = useState(false);
 
-  const handleDelete = (recipeId) => {
-    setRecipes((prevRecipes) =>
-      prevRecipes.filter((recipe) => recipe.id !== recipeId)
-    );
+  useEffect(() => {
+    axios
+      .get("http://localhost:5000/api/recipes")
+      .then((res) => setRecipes(res.data))
+      .catch((err) => {
+        console.error("Ошибка загрузки рецептов:", err);
+        alert("Не удалось загрузить рецепты.");
+      });
+  }, []);
+
+  const handleDelete = async (recipeId) => {
+    try {
+      await axios.delete(`http://localhost:5000/api/recipes/${recipeId}`);
+      setRecipes((prev) => prev.filter((r) => r._id !== recipeId));
+    } catch (err) {
+      console.error("Ошибка при удалении рецепта:", err);
+      alert("Не удалось удалить рецепт.");
+    }
   };
 
-  const handleUpdate = () => {
-    setRecipes((prevRecipes) =>
-      prevRecipes.map((recipe) =>
-        recipe.id === updateRecipeId
-          ? {
-              ...recipe,
-              name: updateRecipeName,
-              description: updateRecipeDescription,
-            }
-          : recipe
-      )
-    );
-    setShowUpdateModal(false);
+  const handleUpdate = async () => {
+    try {
+      const updatedRecipe = {
+        name: updateRecipeName,
+        description: updateRecipeDescription,
+        cookingTime: updateRecipeCookingTime,
+      };
+
+      const res = await axios.put(
+        `http://localhost:5000/api/recipes/${updateRecipeId}`,
+        updatedRecipe
+      );
+
+      setRecipes((prev) =>
+        prev.map((r) => (r._id === updateRecipeId ? res.data : r))
+      );
+      setShowUpdateModal(false);
+    } catch (err) {
+      console.error("Ошибка при обновлении рецепта:", err);
+      alert("Не удалось обновить рецепт.");
+    }
   };
 
   const handleShowCreateModal = () => setShowCreateModal(true);
   const handleCloseCreateModal = () => setShowCreateModal(false);
 
-  const handleCreateRecipe = (newRecipeName, newRecipeDescription) => {
-    const newRecipe = {
-      id: recipes.length + 1,
-      name: newRecipeName,
-      description: newRecipeDescription,
-      rating: 0,
-    };
-    setRecipes([...recipes, newRecipe]);
-    setShowCreateModal(false);
+  const handleCreateRecipe = async (newName, newDescription, newCookingTime) => {
+    try {
+      const res = await axios.post("http://localhost:5000/api/recipes", {
+        name: newName,
+        description: newDescription,
+        cookingTime: newCookingTime,
+        rating: 0,
+      });
+
+      setRecipes([...recipes, res.data]);
+      setShowCreateModal(false);
+    } catch (err) {
+      console.error("Ошибка при создании рецепта:", err);
+      alert("Не удалось создать рецепт.");
+    }
   };
 
-  const handleSetRating = (id, rating) => {
+  const handleSetRating = async (id, rating) => {
     if (rating < 0 || rating > 5) return;
 
-    setRecipes((prevRecipes) =>
-      prevRecipes.map((recipe) =>
-        recipe.id === id ? { ...recipe, rating } : recipe
-      )
-    );
+    try {
+      const recipe = recipes.find((r) => r._id === id);
+      const updated = { ...recipe, rating };
+
+      const res = await axios.put(`http://localhost:5000/api/recipes/${id}`, updated);
+
+      setRecipes((prevRecipes) =>
+        prevRecipes.map((r) => (r._id === id ? res.data : r))
+      );
+    } catch (err) {
+      console.error("Ошибка при обновлении рейтинга:", err);
+      alert("Не удалось обновить рейтинг.");
+    }
   };
 
   const renderStars = (id, currentRating) => {
@@ -102,21 +133,22 @@ const Home = () => {
       </div>
 
       <div style={{ background: "#FFFFFF", padding: "40px", borderRadius: "3px" }}>
-        <h3 className="mb-3">Example Recipes</h3>
+        <h3 className="mb-3">Recipes</h3>
 
         <Row>
           {recipes.map((recipe) => (
-            <Col key={recipe.id} lg={4} className="mb-4">
+            <Col key={recipe._id} lg={4} className="mb-4">
               <Card style={{ background: "#C0C0C0" }}>
                 <Card.Body>
                   <Card.Title>{recipe.name}</Card.Title>
                   <Card.Text>{recipe.description}</Card.Text>
+                  <Card.Text><strong>Cooking Time:</strong> {recipe.cookingTime || 0} minutes</Card.Text>
 
                   <div className="mb-2">
-                    <strong>Rating:</strong> {renderStars(recipe.id, recipe.rating)}
+                    <strong>Rating:</strong> {renderStars(recipe._id, recipe.rating || 0)}
                   </div>
 
-                  <Link to={`/${recipe.id}`}>
+                  <Link to={`/${recipe._id}`}>
                     <Button
                       variant="info"
                       className="ml-2"
@@ -142,9 +174,10 @@ const Home = () => {
                     }}
                     onClick={() => {
                       setShowUpdateModal(true);
-                      setUpdateRecipeId(recipe.id);
+                      setUpdateRecipeId(recipe._id);
                       setUpdateRecipeName(recipe.name);
                       setUpdateRecipeDescription(recipe.description);
+                      setUpdateRecipeCookingTime(recipe.cookingTime || 0);
                     }}
                   >
                     Update
@@ -158,7 +191,7 @@ const Home = () => {
                       padding: "5px 12px",
                       marginBottom: "10px",
                     }}
-                    onClick={() => handleDelete(recipe.id)}
+                    onClick={() => handleDelete(recipe._id)}
                   >
                     Delete
                   </Button>
@@ -189,6 +222,7 @@ const Home = () => {
                 onChange={(e) => setUpdateRecipeName(e.target.value)}
               />
             </Form.Group>
+
             <Form.Group className="mb-3" controlId="updateRecipeDescription">
               <Form.Label>Recipe Description</Form.Label>
               <Form.Control
@@ -196,6 +230,17 @@ const Home = () => {
                 rows={3}
                 value={updateRecipeDescription}
                 onChange={(e) => setUpdateRecipeDescription(e.target.value)}
+              />
+            </Form.Group>
+
+            <Form.Group className="mb-3" controlId="updateRecipeCookingTime">
+              <Form.Label>Cooking Time (minutes)</Form.Label>
+              <Form.Control
+                type="number"
+                value={updateRecipeCookingTime}
+                onChange={(e) =>
+                  setUpdateRecipeCookingTime(parseInt(e.target.value, 10) || 0)
+                }
               />
             </Form.Group>
           </Form>
@@ -222,3 +267,4 @@ const Home = () => {
 };
 
 export default Home;
+
